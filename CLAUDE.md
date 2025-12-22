@@ -205,6 +205,68 @@ Order Processing Pipeline
 | Implementation complete | In Progress → **In Review** | AI/Human |
 | Final approval | In Review → **Done** | ⚠️ **HUMAN ONLY** |
 
+### Git Worktree Workflow
+
+**CRITICAL RULE:** Each Linear issue MUST have its own dedicated git worktree.
+
+#### Worktree Creation
+
+When starting work on a Linear issue:
+
+1. **ALWAYS** create a new worktree for the issue:
+   ```bash
+   git worktree add ../n8n-qr-invoice-shopify-TUF-XXX -b feature/TUF-XXX
+   cd ../n8n-qr-invoice-shopify-TUF-XXX
+   ```
+
+2. **Naming convention:** `feature/TUF-XXX` where XXX is the issue number
+
+3. **Directory structure:**
+   ```
+   n8n-qr-invoice-shopify/          # Main worktree (main branch)
+   n8n-qr-invoice-shopify-TUF-105/  # Issue TUF-105 worktree
+   n8n-qr-invoice-shopify-TUF-106/  # Issue TUF-106 worktree
+   ```
+
+#### Worktree Workflow
+
+1. **Start issue** → Create worktree → Move to "In Progress"
+2. **Work on issue** → Commit changes in worktree
+3. **Complete work** → Move to "In Review" → Push branch
+4. **User approval** → User moves to "Done" → **AI merges worktree to main**
+
+#### Merge Process
+
+When user moves issue to "Done":
+
+1. **Switch to main worktree:**
+   ```bash
+   cd /Users/bvk/Documents/Coding/tuftinglove/n8n-qr-invoice-shopify
+   ```
+
+2. **Merge the feature branch:**
+   ```bash
+   git merge feature/TUF-XXX
+   ```
+
+3. **Push to remote:**
+   ```bash
+   git push origin main
+   ```
+
+4. **Clean up worktree:**
+   ```bash
+   git worktree remove ../n8n-qr-invoice-shopify-TUF-XXX
+   git branch -d feature/TUF-XXX
+   ```
+
+#### Rules
+
+- **NEVER** work directly on main branch
+- **NEVER** merge to main until user moves issue to "Done"
+- **ALWAYS** create commits with meaningful messages referencing the issue (e.g., "TUF-105: Download original invoice from Shopify")
+- **ALWAYS** verify worktree is clean before merging
+
 ### Issue Creation Rules
 
 1. **ALWAYS** create issues in status `Backlog`
