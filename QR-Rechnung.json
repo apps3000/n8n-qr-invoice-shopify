@@ -84,6 +84,28 @@
     },
     {
       "parameters": {
+        "method": "GET",
+        "url": "=https://www.tuftinglove.com/apps/download-pdf/orders/20013e86ca78142b8cfa/{{ $json.id }}/{{ $json.name }}.pdf",
+        "authentication": "none",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2016,
+        -240
+      ],
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Download Original Invoice"
+    },
+    {
+      "parameters": {
         "httpMethod": "POST",
         "path": "b2905784-7a88-4de4-be8c-d31605dc1485",
         "options": {}
@@ -864,6 +886,17 @@
   "pinData": {},
   "connections": {
     "Order created": {
+      "main": [
+        [
+          {
+            "node": "Download Original Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Original Invoice": {
       "main": [
         [
           {
