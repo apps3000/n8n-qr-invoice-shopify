@@ -2,3 +2,6 @@
 .git
 .gitattributes
 .mcp.json
+
+# Claude Code - track settings.json, ignore local settings
+.claude/settings.local.json
