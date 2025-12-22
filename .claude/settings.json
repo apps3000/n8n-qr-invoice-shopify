@@ -5,12 +5,11 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(git -C *:*)",
+      "Bash(git -C :*::*)",
       "Bash(docker mcp:*)",
       "Bash(claude mcp add:*)",
       "Bash(ls:*)",
-      "Skill(n8n-mcp-skills:n8n-node-configuration)",
-      "WebFetch(domain:linear.app)"
+      "Skill(n8n-mcp-skills:n8n-node-configuration)"
     ]
   }
 }
