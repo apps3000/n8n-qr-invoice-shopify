@@ -1,0 +1,1050 @@
+{
+  "name": "QR-Rechnung",
+  "nodes": [
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "value": "0ALRRhTr3capwUk9PVA",
+          "mode": "list",
+          "cachedResultName": "Tuftinglove",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/0ALRRhTr3capwUk9PVA"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1aVQbY2IaM1NQQzd_4p3EoHmP5F6bFZLr",
+          "mode": "list",
+          "cachedResultName": "Rechnungen",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1aVQbY2IaM1NQQzd_4p3EoHmP5F6bFZLr"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -464,
+        -112
+      ],
+      "id": "083e3ed2-85f1-452d-993e-8d256e622a0d",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZHoJmgqXGMyjYHfj",
+          "name": "Google Drive Björn S3000"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "{customerEmail}",
+        "subject": "Deine Rechnung für die Bestellung {orderName}",
+        "emailType": "text",
+        "message": "Liebe/r {customerFirstName}, anbei findest Du die Rechnung für deine Bestellung {orderName} bei Tuftinglove. Wir bedanken uns für Deine zeitnahe Zahlung. Solltest Du noch weitere Fragen haben, dann stehen wir dir gerne unter help@tuftinglove.com zur Verfügung (oder antworte einfach auf diese Mail). Liebe Grüsse von Jenni und dem ganzen Tuftinglove-Team",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          },
+          "senderName": "Tuftinglove",
+          "replyTo": "help@tuftinglove.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        -416
+      ],
+      "id": "b5a33f21-5513-4a38-bcf3-23cd1b506ac0",
+      "name": "Send invoice to customer - DE",
+      "webhookId": "9eca218f-40f0-43c0-8f17-b1cdb08c519c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "kT4eWzA7XyysfGcr",
+          "name": "Gmail shop@tuftinglove.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "6c966880-9c23-4eab-a8be-af82091f3e9d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2224,
+        -240
+      ],
+      "id": "b0b962fb-0ef5-4cec-8b71-34e92c0cef2f",
+      "name": "Order created",
+      "webhookId": "6c966880-9c23-4eab-a8be-af82091f3e9d"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b2905784-7a88-4de4-be8c-d31605dc1485",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2224,
+        784
+      ],
+      "id": "5251f2dc-e69e-4e67-b0d7-925c2ee0cb88",
+      "name": "Order updated",
+      "webhookId": "b2905784-7a88-4de4-be8c-d31605dc1485"
+    },
+    {
+      "parameters": {
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "j0FGBDQgzLbj4ftc",
+          "mode": "list",
+          "cachedResultName": "[TL] Invoice Mapping",
+          "cachedResultUrl": "/projects/wiccQiXgVR9SJMbF/datatables/j0FGBDQgzLbj4ftc"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "shopifyOrderID"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1984,
+        784
+      ],
+      "id": "f522ca82-17ab-45d5-8fcc-2c18d8dc8c48",
+      "name": "If row exists"
+    },
+    {
+      "parameters": {
+        "content": "## Order creation\nExecuted via Webhook when order is created in Shopify",
+        "height": 720,
+        "width": 3360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2448,
+        -448
+      ],
+      "typeVersion": 1,
+      "id": "5c21273e-873c-491a-95a9-68fc04565f30",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Order updated\nExecuted via Webhook when order is updated",
+        "height": 576,
+        "width": 2640
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2336,
+        608
+      ],
+      "typeVersion": 1,
+      "id": "3a8ff9c1-ca87-4f79-ac3f-a3566e3c1000",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "sendTo": "{customerEmail}",
+        "subject": "Deine Rechnung für die Bestellung {orderName}",
+        "emailType": "text",
+        "message": "Liebe/r {customerFirstName}, anbei findest Du die angepasste Rechnung für deine Bestellung {orderName} bei Tuftinglove. Wir bedanken uns für Deine zeitnahe Zahlung. Solltest Du noch weitere Fragen haben, dann stehen wir dir gerne unter help@tuftinglove.com zur Verfügung (oder antworte einfach auf diese Mail). Liebe Grüsse von Jenni und dem ganzen Tuftinglove-Team",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          },
+          "senderName": "Tuftinglove",
+          "replyTo": "help@tuftinglove.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -592,
+        672
+      ],
+      "id": "014c831f-b0b9-4710-8340-5d83621b9b6f",
+      "name": "Send invoice update to customer - DE1",
+      "webhookId": "9eca218f-40f0-43c0-8f17-b1cdb08c519c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "kT4eWzA7XyysfGcr",
+          "name": "Gmail shop@tuftinglove.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": ""
+        },
+        "changeFileContent": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -592,
+        928
+      ],
+      "id": "9a1e7fc0-fbc6-41bc-80d8-01c22e95914a",
+      "name": "Update file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "UmZ26tQ8gjlkjSb2",
+          "name": "Google Drive hq@tuftinglove.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "options": {
+          "channelId": "C0A5FMPCX6V",
+          "initialComment": "Neue Rechnung für POS-Order {orderName}"
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -16,
+        -128
+      ],
+      "id": "efc9e406-afee-413f-8f21-557a2ca48f5f",
+      "name": "Upload POS Invoice to Slack",
+      "webhookId": "4a0070a4-c577-4859-9b9b-9bd56daebafc",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "ed7L1vGhKn2oIuCx",
+          "name": "Studio3000 Slack Bot oAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "11ee07da-8bed-4ebf-83fa-a3d31a478713",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        -112
+      ],
+      "id": "c83c19af-486b-48e0-8d4c-1f1c41d1086d",
+      "name": "If POS Order"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Firma / Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Adresse 1"
+            },
+            {
+              "fieldLabel": "Adresse 2"
+            },
+            {
+              "fieldLabel": "PLZ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Ort",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Land",
+              "fieldType": "dropdown",
+              "defaultValue": "Schweiz",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Deutschland"
+                  },
+                  {
+                    "option": "Österreich"
+                  },
+                  {
+                    "option": "Frankreich"
+                  },
+                  {
+                    "option": "Italien"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "formTitle": "Rechnungsinformationen eingeben",
+          "formDescription": "Füge hier die Rechnungsadresse für die Order {orderName} hinzu. Achtung: Diese wird nicht in Shopify gespeichert, sondern dient nur der einmaligen Rechnungsstellung. Für weitere Bestellungen muss die Adresse in Shopify hinzugefügt werden.",
+          "buttonLabel": "Rechnung erstellen"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        -1632,
+        -384
+      ],
+      "id": "dbd94bd7-8690-4d80-ab6d-a1dc14001bdb",
+      "name": "Request billing address",
+      "webhookId": "1726a611-40e3-4637-b194-44dc1f72c40a"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Das hat geklappt!",
+        "completionMessage": "Die Rechnung wird jetzt generiert und steht in Kürze in Slack und Shopify zum Download bereit.",
+        "options": {
+          "formTitle": "Die Rechnung wird erstellt"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        -1200,
+        -384
+      ],
+      "id": "da580af5-72a9-4788-b2e0-904147fa964a",
+      "name": "Address saved",
+      "webhookId": "e4c78138-f1b4-4395-9f29-4f48b7885aad"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5abfafd0-6bf8-4674-91f7-63d06ef134a9",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1936,
+        -240
+      ],
+      "id": "49d4b94b-543e-4550-b7e5-eecade1379da",
+      "name": "is POS Order without Billing Address"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A5FMPCX6V",
+          "mode": "list",
+          "cachedResultName": "pos-rechnungen"
+        },
+        "text": "Die Order {orderName} hat keine Rechnungsadresse. Bitte klicke hier, um sie hinzuzufügen: {linkToForm)}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -1424,
+        -384
+      ],
+      "id": "616a7517-c6a5-47cf-8d12-11f116a0acac",
+      "name": "Send a message",
+      "webhookId": "753154f0-3cf6-49c3-81dd-7ae0bded8d1c",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "ed7L1vGhKn2oIuCx",
+          "name": "Studio3000 Slack Bot oAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "operation": "get",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [
+        -1712,
+        784
+      ],
+      "id": "db054455-0031-4230-bb8b-b59c0d2a4c38",
+      "name": "Get an order",
+      "credentials": {
+        "shopifyAccessTokenApi": {
+          "id": "6RzAdUyNsVFzcUMs",
+          "name": "Shopify Tuftinglove.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7eb338e7-63b9-42cb-a4c9-c6f904ef04b4",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1488,
+        784
+      ],
+      "id": "f3eed7a8-7ed8-4697-a3eb-2f074807417c",
+      "name": "Payment pending?"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A56HZ7WKW",
+          "mode": "list",
+          "cachedResultName": "rechnungen-verkauf-allgemein"
+        },
+        "text": "Achtung: Die Rechnung für die Order {orderName} kann nicht mehr geändert werden, da sie bereits teilweise bezahlt ist. ",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -1248,
+        944
+      ],
+      "id": "f2099643-1197-446e-bb59-0757b33be684",
+      "name": "Send message: Invoice can't be changed",
+      "webhookId": "0a950658-939f-4a17-b130-f1f81179e239",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "ed7L1vGhKn2oIuCx",
+          "name": "Studio3000 Slack Bot oAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "j0FGBDQgzLbj4ftc",
+          "mode": "list",
+          "cachedResultName": "[TL] Invoice Mapping",
+          "cachedResultUrl": "/projects/wiccQiXgVR9SJMbF/datatables/j0FGBDQgzLbj4ftc"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "isPosOrder": false
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "shopifyCustomerId",
+              "displayName": "shopifyCustomerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "shopifyOrderName",
+              "displayName": "shopifyOrderName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "shopifyOrderID",
+              "displayName": "shopifyOrderID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "isPosOrder",
+              "displayName": "isPosOrder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "paymentGateway",
+              "displayName": "paymentGateway",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "gdriveShareLink",
+              "displayName": "gdriveShareLink",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "gdrivePath",
+              "displayName": "gdrivePath",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceId",
+              "displayName": "invoiceId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceHash",
+              "displayName": "invoiceHash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceCreatedAt",
+              "displayName": "invoiceCreatedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceUpdatedAt",
+              "displayName": "invoiceUpdatedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceCanceledAt",
+              "displayName": "invoiceCanceledAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "originalInvoiceId",
+              "displayName": "originalInvoiceId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -224
+      ],
+      "id": "4e7bc527-2ccc-457d-aaed-a62cc178bd18",
+      "name": "Create Log Entry"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "j0FGBDQgzLbj4ftc",
+          "mode": "list",
+          "cachedResultName": "[TL] Invoice Mapping",
+          "cachedResultUrl": "/projects/wiccQiXgVR9SJMbF/datatables/j0FGBDQgzLbj4ftc"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "isPosOrder": false
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "shopifyCustomerId",
+              "displayName": "shopifyCustomerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "shopifyOrderName",
+              "displayName": "shopifyOrderName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "shopifyOrderID",
+              "displayName": "shopifyOrderID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "isPosOrder",
+              "displayName": "isPosOrder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "paymentGateway",
+              "displayName": "paymentGateway",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "gdriveShareLink",
+              "displayName": "gdriveShareLink",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "gdrivePath",
+              "displayName": "gdrivePath",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceId",
+              "displayName": "invoiceId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceHash",
+              "displayName": "invoiceHash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceCreatedAt",
+              "displayName": "invoiceCreatedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceUpdatedAt",
+              "displayName": "invoiceUpdatedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "invoiceCanceledAt",
+              "displayName": "invoiceCanceledAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "originalInvoiceId",
+              "displayName": "originalInvoiceId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        800
+      ],
+      "id": "8854fcc1-c5c5-4a21-a06a-e3b28c5a8f99",
+      "name": "Update Log Entry"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "009c349c-b530-48b9-9b15-30cf7dc267c2",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        -304
+      ],
+      "id": "79a006c4-d860-4a4f-ae60-144074859018",
+      "name": "if Mail Address exists"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Order created": {
+      "main": [
+        [
+          {
+            "node": "is POS Order without Billing Address",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order updated": {
+      "main": [
+        [
+          {
+            "node": "If row exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send invoice update to customer - DE1": {
+      "main": [
+        []
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "If POS Order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload POS Invoice to Slack": {
+      "main": [
+        []
+      ]
+    },
+    "If POS Order": {
+      "main": [
+        [
+          {
+            "node": "Upload POS Invoice to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request billing address": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is POS Order without Billing Address": {
+      "main": [
+        [
+          {
+            "node": "Request billing address",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Address saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If row exists": {
+      "main": [
+        [
+          {
+            "node": "Get an order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get an order": {
+      "main": [
+        [
+          {
+            "node": "Payment pending?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payment pending?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send message: Invoice can't be changed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message: Invoice can't be changed": {
+      "main": [
+        []
+      ]
+    },
+    "Create Log Entry": {
+      "main": [
+        []
+      ]
+    },
+    "Send invoice to customer - DE": {
+      "main": [
+        []
+      ]
+    },
+    "if Mail Address exists": {
+      "main": [
+        [
+          {
+            "node": "Send invoice to customer - DE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": true,
+    "timeSavedPerExecution": 5
+  },
+  "versionId": "dc6a1c60-12c8-4af9-898f-5dcc379bd366",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e853cd69cca0e84ba42853bd665b7fd787b5193173ba2d8a6fc3b3e090b98d5e"
+  },
+  "id": "EtqPDBEYAI6Lh90a",
+  "tags": [
+    {
+      "updatedAt": "2025-10-16T13:03:32.406Z",
+      "createdAt": "2025-10-16T13:03:32.406Z",
+      "id": "0sQyIPtSDX3A3fI7",
+      "name": "tuftinglove"
+    },
+    {
+      "updatedAt": "2025-10-16T13:03:35.103Z",
+      "createdAt": "2025-10-16T13:03:35.103Z",
+      "id": "XRfeAgLDvoy1r5cA",
+      "name": "shopify"
+    },
+    {
+      "updatedAt": "2025-12-22T14:43:37.245Z",
+      "createdAt": "2025-12-22T14:43:37.245Z",
+      "id": "aQumk78hezNTnewW",
+      "name": "qr_invoice"
+    }
+  ]
+}
