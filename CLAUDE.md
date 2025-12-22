@@ -228,6 +228,8 @@ When starting work on a Linear issue:
    n8n-qr-invoice-shopify-TUF-106/  # Issue TUF-106 worktree
    ```
 
+4. **Claude Code settings:** Project settings in `.claude/settings.json` are tracked in Git and automatically available in all worktrees. Local settings (`.claude/settings.local.json`) are gitignored and worktree-specific.
+
 #### Worktree Workflow
 
 1. **Start issue** → Create worktree → Move to "In Progress"
