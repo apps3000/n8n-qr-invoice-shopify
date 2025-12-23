@@ -3,6 +3,537 @@
   "nodes": [
     {
       "parameters": {
+        "httpMethod": "POST",
+        "path": "6c966880-9c23-4eab-a8be-af82091f3e9d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2224,
+        112
+      ],
+      "id": "b0b962fb-0ef5-4cec-8b71-34e92c0cef2f",
+      "name": "Order created",
+      "webhookId": "6c966880-9c23-4eab-a8be-af82091f3e9d"
+    },
+    {
+      "parameters": {
+        "content": "## Order creation\nExecuted via Webhook when order is created in Shopify",
+        "height": 1200,
+        "width": 5904,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2288,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "5c21273e-873c-491a-95a9-68fc04565f30",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Vorname",
+              "placeholder": "Vorname",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Nachname",
+              "placeholder": "Nachname",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Firma",
+              "placeholder": "Firma (optional)"
+            },
+            {
+              "fieldLabel": "Adresse 1",
+              "placeholder": "Strasse und Hausnummer",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Adresse 2",
+              "placeholder": "Zusatz (optional)"
+            },
+            {
+              "fieldLabel": "PLZ",
+              "placeholder": "PLZ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Ort",
+              "placeholder": "Ort",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Land",
+              "fieldType": "dropdown",
+              "defaultValue": "Schweiz",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Schweiz"
+                  },
+                  {
+                    "option": "Deutschland"
+                  },
+                  {
+                    "option": "Oesterreich"
+                  },
+                  {
+                    "option": "Frankreich"
+                  },
+                  {
+                    "option": "Italien"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "formTitle": "Rechnungsadresse erfassen",
+          "formDescription": "Bitte gib die Rechnungsadresse fuer die Bestellung ein.",
+          "buttonLabel": "Adresse speichern"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        -1552,
+        32
+      ],
+      "id": "dbd94bd7-8690-4d80-ab6d-a1dc14001bdb",
+      "name": "Request billing address",
+      "webhookId": "1726a611-40e3-4637-b194-44dc1f72c40a"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Adresse gespeichert!",
+        "completionMessage": "Die Rechnungsadresse wurde erfolgreich erfasst. Die Rechnung wird jetzt generiert.",
+        "options": {
+          "formTitle": "Vielen Dank!"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        -1328,
+        32
+      ],
+      "id": "da580af5-72a9-4788-b2e0-904147fa964a",
+      "name": "Address saved",
+      "webhookId": "e4c78138-f1b4-4395-9f29-4f48b7885aad"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-source-pos",
+              "leftValue": "={{ $json.order.source_name }}",
+              "rightValue": "pos",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "cond-no-billing",
+              "leftValue": "={{ $json.order.billing_address }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notExists",
+                "name": "filter.operator.notExists"
+              }
+            },
+            {
+              "id": "cond-payment-receipt",
+              "leftValue": "={{ $json.order.payment_terms?.payment_terms_type }}",
+              "rightValue": "receipt",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2000,
+        112
+      ],
+      "id": "49d4b94b-543e-4550-b7e5-eecade1379da",
+      "name": "is POS Order without Billing Address"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A5FMPCX6V",
+          "mode": "list",
+          "cachedResultName": "pos-rechnungen"
+        },
+        "text": ":receipt: *POS-Bestellung {{ $json.order.name }} benoetigt Rechnungsadresse!*\n\nKunde: {{ $json.order.customer.first_name }} {{ $json.order.customer.last_name }}\nBetrag: {{ $json.order.total_price }} {{ $json.order.currency }}\n\n:point_right: <{{ $execution.resumeFormUrl }}|Adresse erfassen>",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -1776,
+        32
+      ],
+      "id": "616a7517-c6a5-47cf-8d12-11f116a0acac",
+      "name": "Send a message",
+      "webhookId": "753154f0-3cf6-49c3-81dd-7ae0bded8d1c",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "ed7L1vGhKn2oIuCx",
+          "name": "Studio3000 Slack Bot oAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Determine if this is an invoice order that requires QR-Bill generation\nconst order = $input.item.json.order || $input.item.json;\nconst paymentGateways = order.payment_gateway_names || [];\nconst paymentTermsType = order.payment_terms?.payment_terms_type;\n\n// Check for invoice payment:\n// 1. Shop order with \"Invoice\" or \"Rechnung\" gateway\n// 2. POS order with payment_terms_type === \"receipt\"\nconst isInvoiceOrder = \n  paymentGateways.some(g => g.toLowerCase().includes('invoice') || g.toLowerCase().includes('rechnung')) ||\n  paymentTermsType === 'receipt';\n\nreturn {\n  json: {\n    ...($input.item.json),\n    _isInvoiceOrder: isInvoiceOrder,\n    _routeTo: isInvoiceOrder ? 'qr_invoice' : 'archive_only'\n  },\n  binary: $input.item.binary\n};"
+      },
+      "id": "a48bfc69-3100-4c71-b91d-c1e9acae1349",
+      "name": "Determine Invoice Type",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-is-invoice",
+              "leftValue": "={{ $json._isInvoiceOrder }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "name": "filter.operator.true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "903f4a8a-5d2f-415e-b05f-3ec460870704",
+      "name": "Is Invoice Order?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -880,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Calculate 27-digit QRR Reference with Modulo 10 recursive check digit\nconst data = $input.item.json;\nconst order = data.order || data;\n\n// Extract order number (without # prefix)\nconst orderNumber = String(order.order_number || order.name || '').replace(/^#/, '');\n\n// Extract date from created_at (YYYYMMDD)\nconst createdAt = new Date(order.created_at);\nconst dateStr = createdAt.toISOString().slice(0, 10).replace(/-/g, '');\n\n// Build base reference: YYYYMMDD + OrderNumber\nconst baseRef = dateStr + orderNumber;\n\n// Pad to 26 digits with leading zeros\nconst paddedRef = baseRef.padStart(26, '0');\n\n// Modulo 10 recursive algorithm for check digit\nfunction calculateMod10Recursive(ref) {\n  const table = [0, 9, 4, 6, 8, 2, 7, 1, 3, 5];\n  let carry = 0;\n  \n  for (const char of ref) {\n    carry = table[(carry + parseInt(char, 10)) % 10];\n  }\n  \n  return (10 - carry) % 10;\n}\n\nconst checkDigit = calculateMod10Recursive(paddedRef);\nconst qrrReference = paddedRef + checkDigit;\n\n// Validate: must be 27 digits\nif (!/^\\d{27}$/.test(qrrReference)) {\n  throw new Error(`Invalid QRR reference: ${qrrReference}`);\n}\n\nreturn {\n  json: {\n    ...data,\n    _qrrReference: qrrReference,\n    _qrrReferenceFormatted: qrrReference.replace(/(\\d{5})/g, '$1 ').trim()\n  },\n  binary: $input.item.binary\n};"
+      },
+      "id": "920b910d-99d2-4579-b9f2-c54fa1089f85",
+      "name": "Calculate QRR Reference",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Map Shopify billing_address to QR-Invoice API format (ultimateDebtor)\nconst data = $input.item.json;\nconst order = data.order || data;\nconst billing = order.billing_address;\n\nif (!billing) {\n  throw new Error('No billing_address found in order data');\n}\n\n// Name: Company if available, otherwise First + Last name\nconst name = billing.company \n  ? billing.company \n  : `${billing.first_name || ''} ${billing.last_name || ''}`.trim();\n\n// Extract street name and house number from address1\n// Pattern: \"Streetname 123\" or \"Streetname 123a\"\nconst addressMatch = billing.address1?.match(/^(.+?)\\s+(\\d+\\w*)$/);\nlet streetName, houseNumber;\n\nif (addressMatch) {\n  streetName = addressMatch[1];\n  houseNumber = addressMatch[2];\n} else {\n  // Fallback: entire address as street name\n  streetName = billing.address1 || '';\n  houseNumber = '';\n}\n\n// Validation: check required fields\nconst errors = [];\nif (!name) errors.push('Name is required');\nif (!billing.zip) errors.push('ZIP/postal code is required');\nif (!billing.city) errors.push('City is required');\nif (!billing.country_code || billing.country_code.length !== 2) errors.push('Country code invalid (must be 2 chars)');\n\nif (errors.length > 0) {\n  throw new Error(`Address validation failed: ${errors.join(', ')}`);\n}\n\n// Build ultimateDebtor object with max field lengths\nconst ultimateDebtor = {\n  addressType: 'STRUCTURED',\n  name: name.substring(0, 70),\n  streetName: (streetName || '').substring(0, 70),\n  houseNumber: (houseNumber || '').substring(0, 16),\n  postalCode: billing.zip.substring(0, 16),\n  city: billing.city.substring(0, 35),\n  country: billing.country_code.toUpperCase()\n};\n\nreturn {\n  json: {\n    ...data,\n    _ultimateDebtor: ultimateDebtor\n  },\n  binary: $input.item.binary\n};"
+      },
+      "id": "beb39eb4-9aa7-4ca8-9996-3a59e50dfcc3",
+      "name": "Map Debtor Address",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Build QR Invoice Payload for qr-invoice.cloud API\nconst data = $input.item.json;\nconst order = data.order || data;\n\n// Get data from previous nodes\nconst qrrReference = data._qrrReference;\nconst ultimateDebtor = data._ultimateDebtor;\n\nif (!qrrReference) {\n  throw new Error('Missing _qrrReference from Calculate QRR Reference node');\n}\nif (!ultimateDebtor) {\n  throw new Error('Missing _ultimateDebtor from Map Debtor Address node');\n}\n\n// Amount as number\nconst amount = parseFloat(order.total_price);\nif (isNaN(amount) || amount <= 0) {\n  throw new Error(`Invalid amount: ${order.total_price}`);\n}\n\n// Currency (only CHF or EUR allowed)\nconst currency = order.currency === 'EUR' ? 'EUR' : 'CHF';\n\n// Order number (without #)\nconst orderNumber = String(order.order_number || order.name || '').replace(/^#/, '');\n\n// Invoice date for billInformation (YYMMDD)\nconst invoiceDate = new Date(order.created_at);\nconst invoiceDateFormatted = invoiceDate.toISOString().slice(2, 10).replace(/-/g, '');\n\n// billInformation (Swico S1 Format)\n// Tag 10: Invoice number (Order Number)\n// Tag 11: Invoice date (YYMMDD)\n// Tag 30: UID (without CHE- and separators)\nconst uid = '507842837'; // Studio3000 GmbH UID\nconst billInformation = `//S1/10/${orderNumber}/11/${invoiceDateFormatted}/30/${uid}`;\n\n// Creditor (static for Studio3000 GmbH)\nconst creditor = {\n  addressType: 'STRUCTURED',\n  name: 'Studio3000 GmbH',\n  streetName: 'Bachstrasse',\n  houseNumber: '33',\n  postalCode: '5034',\n  city: 'Suhr',\n  country: 'CH'\n};\n\n// QR-IBAN\nconst iban = 'CH423000523078572701L';\n\n// Build complete QrInvoice object\nconst qrInvoice = {\n  creditorInformation: {\n    iban: iban,\n    creditor: creditor\n  },\n  paymentAmountInformation: {\n    amount: amount,\n    currency: currency\n  },\n  paymentReference: {\n    referenceType: 'QRR',\n    reference: qrrReference,\n    additionalInformation: {\n      unstructuredMessage: `Rechnung #${orderNumber} Tuftinglove.com`.substring(0, 140),\n      billInformation: billInformation.substring(0, 140)\n    }\n  },\n  ultimateDebtor: ultimateDebtor\n};\n\nreturn {\n  json: {\n    ...data,\n    _qrInvoice: qrInvoice,\n    _orderNumber: orderNumber,\n    _amount: amount,\n    _currency: currency\n  },\n  binary: $input.item.binary\n};"
+      },
+      "id": "6d68648e-9330-4d6d-8498-b367003b9875",
+      "name": "Build QR Invoice Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.qr-invoice.cloud/v2/payment-part-receipt",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "Accept-Language",
+              "value": "de"
+            },
+            {
+              "name": "fontFamily",
+              "value": "LIBERATION_SANS"
+            },
+            {
+              "name": "pageSize",
+              "value": "A4"
+            },
+            {
+              "name": "resolution",
+              "value": "MEDIUM_300_DPI"
+            },
+            {
+              "name": "boundaryLines",
+              "value": "true"
+            },
+            {
+              "name": "boundaryLineScissors",
+              "value": "true"
+            },
+            {
+              "name": "fontsEmbedded",
+              "value": "true"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/pdf"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json._qrInvoice) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "qrPaymentPart"
+            }
+          }
+        }
+      },
+      "id": "9a8aad0f-5113-4a75-a615-0479426b684e",
+      "name": "Generate QR Payment Part",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        112
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "pyIAvpxhSQ4izG2I",
+          "name": "QR Invoice Query Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.tuftinglove.com/apps/download-pdf/orders/20013e86ca78142b8cfa/20197539836450216/{{ (($json.order?.name || $json.name || '').replace('#', '')).toLowerCase() }}.pdf",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "originalInvoice"
+            }
+          }
+        }
+      },
+      "id": "3533bf0e-442a-4727-b391-488e3ff03df4",
+      "name": "Download Original Invoice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -656,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Collect both PDFs for merge\nconst data = $input.item.json;\n\n// Get original invoice from Download Original Invoice node\nconst originalInvoiceNode = $('Download Original Invoice').first();\nif (!originalInvoiceNode?.binary?.originalInvoice) {\n  throw new Error('Original invoice binary not found from Download Original Invoice node');\n}\n\n// Get QR payment part from current input (Generate QR Payment Part)\nconst qrPaymentPart = $input.item.binary?.qrPaymentPart;\nif (!qrPaymentPart) {\n  throw new Error('QR Payment Part binary not found from Generate QR Payment Part node');\n}\n\nreturn {\n  json: {\n    ...data\n  },\n  binary: {\n    originalInvoice: originalInvoiceNode.binary.originalInvoice,\n    qrPaymentPart: qrPaymentPart\n  }\n};"
+      },
+      "id": "180dcc87-6e58-4448-aa3a-d2be11c6fa15",
+      "name": "Prepare PDF Merge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.qr-invoice.cloud/v2/pdf/append",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file1",
+              "inputDataFieldName": "originalInvoice"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file2",
+              "inputDataFieldName": "qrPaymentPart"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "mergedInvoice"
+            }
+          }
+        }
+      },
+      "id": "915d921a-7d4e-4b13-86bf-a57ec43389f1",
+      "name": "Merge PDFs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        112
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "pyIAvpxhSQ4izG2I",
+          "name": "QR Invoice Query Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Calculate Due Date based on order type\n// - Invoice orders: Order date + 30 days\n// - Non-invoice orders: Order date (same day)\n\nconst data = $input.item.json;\nconst order = data.order || data._order || data;\n\n// Check if this is an invoice order\nconst isInvoiceOrder = data._isInvoiceOrder === true;\n\n// Invoice date from order\nconst invoiceDate = new Date(order.created_at);\n\n// Due date calculation\nconst dueDate = new Date(invoiceDate);\nif (isInvoiceOrder) {\n  // Invoice orders: due in 30 days\n  dueDate.setDate(dueDate.getDate() + 30);\n} else {\n  // Non-invoice orders: due date = order date (already paid)\n  // Keep dueDate as invoiceDate (no change)\n}\n\n// ISO format for Shopify (YYYY-MM-DD)\nconst dueDateISO = dueDate.toISOString().split('T')[0];\nconst invoiceDateISO = invoiceDate.toISOString().split('T')[0];\n\n// Order ID for Shopify GraphQL (needs gid format)\nconst orderId = order.id || order.admin_graphql_api_id;\nconst orderGid = orderId.toString().startsWith('gid://') \n  ? orderId \n  : `gid://shopify/Order/${orderId}`;\n\nreturn {\n  json: {\n    ...data,\n    _orderId: orderId,\n    _orderGid: orderGid,\n    _orderName: order.name,\n    _invoiceDate: invoiceDateISO,\n    _dueDate: dueDateISO,\n    _isInvoiceOrder: isInvoiceOrder\n  },\n  binary: $input.item.binary\n};"
+      },
+      "id": "117f6795-8619-47ea-8fdf-00ca23e2b341",
+      "name": "Calculate Due Date",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tuftinglove.myshopify.com/admin/api/2025-10/graphql.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"mutation orderUpdate($input: OrderInput!) { orderUpdate(input: $input) { order { id metafields(first: 5) { edges { node { namespace key value } } } } userErrors { field message } } }\",\n  \"variables\": {\n    \"input\": {\n      \"id\": \"{{ $json._orderGid }}\",\n      \"metafields\": [\n        {\n          \"namespace\": \"custom\",\n          \"key\": \"qr_invoice_due_date\",\n          \"value\": \"{{ $json._dueDate }}\",\n          \"type\": \"date\"\n        },\n        {\n          \"namespace\": \"custom\",\n          \"key\": \"qr_invoice\",\n          \"value\": \"{{ $json._gdrive.shareUrl }}\",\n          \"type\": \"url\"\n        },\n        {\n          \"namespace\": \"custom\",\n          \"key\": \"qr_invoice_gdrive_link\",\n          \"value\": \"{{ $json._gdrive.shareUrl }}\",\n          \"type\": \"url\"\n        }\n      ]\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "6070c61f-f620-4dae-aee0-4b0979869889",
+      "name": "Update Order Metafields",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2032,
+        112
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "MLdZsiOTu6weB7sl",
+          "name": "Tuftinglove Shopify Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Generate random filename for security (no order number in public URL)\nconst data = $input.item.json;\nconst order = data.order || data;\nconst orderNumber = String(order.order_number || order.name || '').replace(/^#/, '');\n\n// Generate 16-character alphanumeric random string\nconst chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\nlet randomString = '';\nfor (let i = 0; i < 16; i++) {\n  randomString += chars.charAt(Math.floor(Math.random() * chars.length));\n}\n\n// Filename without order number for security\nconst filename = `${randomString}.pdf`;\n\nreturn {\n  json: {\n    ...data,\n    _gdrive: {\n      filename: filename,\n      randomId: randomString,\n      orderNumber: orderNumber\n    }\n  },\n  binary: $input.item.binary\n};"
+      },
+      "id": "bfeec035-7ee9-44e8-8faf-1cd2061d5032",
+      "name": "Generate Random Filename",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "name": "={{ $json._gdrive.filename }}",
         "driveId": {
           "__rl": true,
           "value": "0ALRRhTr3capwUk9PVA",
@@ -19,216 +550,14 @@
         },
         "options": {}
       },
+      "id": "1c40c95d-a5b4-4938-ae6f-453a1fa817eb",
+      "name": "Upload Invoice to Drive",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        -464,
-        -112
+        1136,
+        112
       ],
-      "id": "083e3ed2-85f1-452d-993e-8d256e622a0d",
-      "name": "Upload file",
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "ZHoJmgqXGMyjYHfj",
-          "name": "Google Drive Björn S3000"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "sendTo": "{customerEmail}",
-        "subject": "Deine Rechnung für die Bestellung {orderName}",
-        "emailType": "text",
-        "message": "Liebe/r {customerFirstName}, anbei findest Du die Rechnung für deine Bestellung {orderName} bei Tuftinglove. Wir bedanken uns für Deine zeitnahe Zahlung. Solltest Du noch weitere Fragen haben, dann stehen wir dir gerne unter help@tuftinglove.com zur Verfügung (oder antworte einfach auf diese Mail). Liebe Grüsse von Jenni und dem ganzen Tuftinglove-Team",
-        "options": {
-          "attachmentsUi": {
-            "attachmentsBinary": [
-              {}
-            ]
-          },
-          "senderName": "Tuftinglove",
-          "replyTo": "help@tuftinglove.com"
-        }
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        -16,
-        -416
-      ],
-      "id": "b5a33f21-5513-4a38-bcf3-23cd1b506ac0",
-      "name": "Send invoice to customer - DE",
-      "webhookId": "9eca218f-40f0-43c0-8f17-b1cdb08c519c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "kT4eWzA7XyysfGcr",
-          "name": "Gmail shop@tuftinglove.com"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "6c966880-9c23-4eab-a8be-af82091f3e9d",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [
-        -2224,
-        -240
-      ],
-      "id": "b0b962fb-0ef5-4cec-8b71-34e92c0cef2f",
-      "name": "Order created",
-      "webhookId": "6c966880-9c23-4eab-a8be-af82091f3e9d"
-    },
-    {
-      "parameters": {
-        "method": "GET",
-        "url": "=https://www.tuftinglove.com/apps/download-pdf/orders/20013e86ca78142b8cfa/{{ $json.id }}/{{ $json.name }}.pdf",
-        "authentication": "none",
-        "options": {
-          "response": {
-            "response": {
-              "responseFormat": "file"
-            }
-          }
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        -2016,
-        -240
-      ],
-      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "name": "Download Original Invoice"
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "b2905784-7a88-4de4-be8c-d31605dc1485",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [
-        -2224,
-        784
-      ],
-      "id": "5251f2dc-e69e-4e67-b0d7-925c2ee0cb88",
-      "name": "Order updated",
-      "webhookId": "b2905784-7a88-4de4-be8c-d31605dc1485"
-    },
-    {
-      "parameters": {
-        "operation": "rowExists",
-        "dataTableId": {
-          "__rl": true,
-          "value": "j0FGBDQgzLbj4ftc",
-          "mode": "list",
-          "cachedResultName": "[TL] Invoice Mapping",
-          "cachedResultUrl": "/projects/wiccQiXgVR9SJMbF/datatables/j0FGBDQgzLbj4ftc"
-        },
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "shopifyOrderID"
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1,
-      "position": [
-        -1984,
-        784
-      ],
-      "id": "f522ca82-17ab-45d5-8fcc-2c18d8dc8c48",
-      "name": "If row exists"
-    },
-    {
-      "parameters": {
-        "content": "## Order creation\nExecuted via Webhook when order is created in Shopify",
-        "height": 720,
-        "width": 3360,
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -2448,
-        -448
-      ],
-      "typeVersion": 1,
-      "id": "5c21273e-873c-491a-95a9-68fc04565f30",
-      "name": "Sticky Note"
-    },
-    {
-      "parameters": {
-        "content": "## Order updated\nExecuted via Webhook when order is updated",
-        "height": 576,
-        "width": 2640
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -2336,
-        608
-      ],
-      "typeVersion": 1,
-      "id": "3a8ff9c1-ca87-4f79-ac3f-a3566e3c1000",
-      "name": "Sticky Note1"
-    },
-    {
-      "parameters": {
-        "sendTo": "{customerEmail}",
-        "subject": "Deine Rechnung für die Bestellung {orderName}",
-        "emailType": "text",
-        "message": "Liebe/r {customerFirstName}, anbei findest Du die angepasste Rechnung für deine Bestellung {orderName} bei Tuftinglove. Wir bedanken uns für Deine zeitnahe Zahlung. Solltest Du noch weitere Fragen haben, dann stehen wir dir gerne unter help@tuftinglove.com zur Verfügung (oder antworte einfach auf diese Mail). Liebe Grüsse von Jenni und dem ganzen Tuftinglove-Team",
-        "options": {
-          "attachmentsUi": {
-            "attachmentsBinary": [
-              {}
-            ]
-          },
-          "senderName": "Tuftinglove",
-          "replyTo": "help@tuftinglove.com"
-        }
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        -592,
-        672
-      ],
-      "id": "014c831f-b0b9-4710-8340-5d83621b9b6f",
-      "name": "Send invoice update to customer - DE1",
-      "webhookId": "9eca218f-40f0-43c0-8f17-b1cdb08c519c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "kT4eWzA7XyysfGcr",
-          "name": "Gmail shop@tuftinglove.com"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "update",
-        "fileId": {
-          "__rl": true,
-          "mode": "id",
-          "value": ""
-        },
-        "changeFileContent": true,
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        -592,
-        928
-      ],
-      "id": "9a1e7fc0-fbc6-41bc-80d8-01c22e95914a",
-      "name": "Update file",
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "UmZ26tQ8gjlkjSb2",
@@ -238,26 +567,126 @@
     },
     {
       "parameters": {
-        "authentication": "oAuth2",
-        "resource": "file",
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "id": "e31791e1-7c86-442b-9e29-cb88a41340fe",
+      "name": "Share Invoice File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1360,
+        112
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "UmZ26tQ8gjlkjSb2",
+          "name": "Google Drive hq@tuftinglove.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Build share link and collect all data for metafield update\nconst shareData = $input.item.json;\nconst fileId = shareData.id;\n\n// Get data from Generate Random Filename node\nconst gdriveData = $('Generate Random Filename').first().json._gdrive;\n\n// Get all previous data\nconst prevData = $('Generate Random Filename').first().json;\n\n// Build share URL\nconst shareUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;\n\nreturn {\n  json: {\n    ...prevData,\n    _gdrive: {\n      ...gdriveData,\n      fileId: fileId,\n      shareUrl: shareUrl\n    }\n  },\n  binary: $('Generate Random Filename').first().binary\n};"
+      },
+      "id": "c143b3ba-3983-4e1d-af20-0b12a9008a18",
+      "name": "Build Share Link",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare email data for invoice sending\n// TUF-120: Optimized email with locale support, Du-form, conditional due date\n// TUF-121: Locale-based language selection (DE vs EN)\n// TUF-122: German text in \"Du\" form\n// TUF-123: Due date hint only for invoice orders\n\nconst data = $input.item.json;\nconst order = data.order || data._order || data;\nconst gdrive = data._gdrive;\n\n// Recipient info\nconst recipientEmail = order.customer?.email || order.email || '';\nconst recipientFirstName = order.customer?.first_name || order.billing_address?.first_name || '';\n\n// Order details\nconst orderNumber = String(order.order_number || order.name || '').replace(/^#/, '');\nconst orderName = order.name || `#${orderNumber}`;\nconst totalPrice = parseFloat(order.total_price || 0).toFixed(2);\nconst currency = order.currency || 'CHF';\n\n// Due date calculation\nconst dueDate = data._dueDate || (() => {\n  const orderDate = new Date(order.created_at);\n  const due = new Date(orderDate);\n  due.setDate(due.getDate() + 30);\n  return due.toISOString().split('T')[0];\n})();\nconst dueDateFormatted = new Date(dueDate).toLocaleDateString('de-CH');\n\n// Order type checks\nconst isShopOrder = order.source_name !== 'pos';\nconst isPosOrder = order.source_name === 'pos';\nconst isInvoiceOrder = data._isInvoiceOrder === true;\nconst hasEmail = !!recipientEmail;\n\n// TUF-121: Locale detection - default to German for German-speaking customers\nconst customerLocale = (order.customer?.locale || order.customer_locale || 'de').toLowerCase();\nconst isGerman = customerLocale.startsWith('de');\n\n// TUF-123: Show due date only for invoice orders\nconst showDueDate = isInvoiceOrder;\n\n// TUF-122: German text in \"Du\" form\nconst emailContent = isGerman ? {\n  subject: `Deine Rechnung ${orderName} von Tuftinglove`,\n  greeting: recipientFirstName ? `Hallo ${recipientFirstName}` : 'Hallo',\n  thankYou: 'Vielen Dank für deine Bestellung bei Tuftinglove!',\n  invoiceText: `Anbei findest du deine Rechnung ${orderName}.`,\n  amountLabel: 'Rechnungsbetrag',\n  dueDateLabel: 'Zahlbar bis',\n  paymentNote: 'Bitte überweise den Betrag mit dem beigefügten QR-Einzahlungsschein.',\n  viewOnline: 'Rechnung online ansehen',\n  contactNote: 'Bei Fragen erreichst du uns unter',\n  signature: 'Liebe Grüsse',\n  team: 'Jenni und das Tuftinglove-Team'\n} : {\n  subject: `Your invoice ${orderName} from Tuftinglove`,\n  greeting: recipientFirstName ? `Hello ${recipientFirstName}` : 'Hello',\n  thankYou: 'Thank you for your order at Tuftinglove!',\n  invoiceText: `Please find your invoice ${orderName} attached.`,\n  amountLabel: 'Invoice amount',\n  dueDateLabel: 'Due by',\n  paymentNote: 'Please transfer the amount using the attached QR payment slip.',\n  viewOnline: 'View invoice online',\n  contactNote: 'For questions, reach us at',\n  signature: 'Best regards',\n  team: 'Jenni and the Tuftinglove Team'\n};\n\n// Send logic\nconst shouldSendEmail = hasEmail && (isShopOrder || isInvoiceOrder);\nconst shouldSendSlack = isPosOrder && isInvoiceOrder && !hasEmail;\n\nreturn {\n  json: {\n    ...data,\n    _email: {\n      to: recipientEmail,\n      subject: emailContent.subject,\n      recipientFirstName: recipientFirstName,\n      orderNumber: orderNumber,\n      orderName: orderName,\n      totalPrice: totalPrice,\n      currency: currency,\n      dueDate: dueDateFormatted,\n      gdriveLink: gdrive?.share_url || gdrive?.shareUrl || '',\n      // Localized content\n      isGerman: isGerman,\n      showDueDate: showDueDate,\n      content: emailContent\n    },\n    _isShopOrder: isShopOrder,\n    _isPosOrder: isPosOrder,\n    _isInvoiceOrder: isInvoiceOrder,\n    _hasEmail: hasEmail,\n    _shouldSendEmail: shouldSendEmail,\n    _shouldSendSlack: shouldSendSlack\n  },\n  binary: $input.item.binary\n};"
+      },
+      "id": "20fdce6c-695d-4ede-acc9-649b271eba7d",
+      "name": "Prepare Email Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "shop-order",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json._shouldSendEmail }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "212d01bd-3266-4eb5-bbdc-3b23e20dc51e",
+      "name": "Should Send Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2208,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json._email.to }}",
+        "subject": "={{ $json._email.subject }}",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n</head>\n<body style=\"margin: 0; padding: 0; background-color: #FFFFFF; font-family: Arial, sans-serif;\">\n  <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"background-color: #FFFFFF;\">\n    <tr>\n      <td align=\"center\" style=\"padding: 40px 20px;\">\n        <table role=\"presentation\" width=\"600\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"max-width: 600px;\">\n          <!-- Header with Logo -->\n          <tr>\n            <td align=\"center\" style=\"padding-bottom: 30px;\">\n              <img src=\"https://www.tuftinglove.com/cdn/shop/files/logo_schrift.png?v=1677444262&width=200\" alt=\"Tuftinglove\" width=\"200\" style=\"display: block;\">\n            </td>\n          </tr>\n          <!-- Content Box -->\n          <tr>\n            <td style=\"background-color: #FFF0E5; border-radius: 16px; padding: 40px;\">\n              <p style=\"margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #333;\">{{ $json._email.content.greeting }},</p>\n              <p style=\"margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #333;\">{{ $json._email.content.thankYou }}</p>\n              <p style=\"margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #333;\">{{ $json._email.content.invoiceText }}</p>\n              \n              <!-- Amount -->\n              <p style=\"margin: 0 0 10px 0; font-size: 16px; color: #333;\">\n                <strong>{{ $json._email.content.amountLabel }}:</strong>\n                <span style=\"font-size: 24px; font-weight: bold; color: #333;\">{{ $json._email.currency }} {{ $json._email.totalPrice }}</span>\n              </p>\n              \n              <!-- Due Date (conditional) -->\n              {{ $json._email.showDueDate ? '<p style=\"margin: 0 0 20px 0; font-size: 16px; color: #333;\"><strong>' + $json._email.content.dueDateLabel + ':</strong> <span style=\"color: #e74c3c; font-weight: bold;\">' + $json._email.dueDate + '</span></p>' : '' }}\n              \n              {{ $json._email.showDueDate ? '<p style=\"margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #333;\">' + $json._email.content.paymentNote + '</p>' : '' }}\n              \n              <!-- Button -->\n              <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin: 30px 0;\">\n                <tr>\n                  <td style=\"background-color: #7E97FF; border-radius: 9999px;\">\n                    <a href=\"{{ $json._email.gdriveLink }}\" style=\"display: inline-block; padding: 0 1.25rem; min-height: 2.25rem; line-height: 2.25rem; font-size: .875rem; font-weight: 700; color: #FFFFFF; text-decoration: none;\">{{ $json._email.content.viewOnline }}</a>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n          <!-- Footer -->\n          <tr>\n            <td style=\"padding: 30px 0; text-align: center;\">\n              <p style=\"margin: 0 0 10px 0; font-size: 16px; color: #333;\">{{ $json._email.content.signature }},<br>{{ $json._email.content.team }}</p>\n              <p style=\"margin: 20px 0 0 0; font-size: 12px; color: #666;\">{{ $json._email.content.contactNote }} help@tuftinglove.com<br>Tuftinglove | Studio3000 GmbH | Bachstrasse 33 | 5034 Suhr</p>\n            </td>\n          </tr>\n        </table>\n      </td>\n    </tr>\n  </table>\n</body>\n</html>",
         "options": {
-          "channelId": "C0A5FMPCX6V",
-          "initialComment": "Neue Rechnung für POS-Order {orderName}"
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "mergedInvoice"
+              }
+            ]
+          },
+          "senderName": "Tuftinglove",
+          "replyTo": "help@tuftinglove.com"
         }
       },
-      "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.4,
+      "id": "9b260bee-865a-48a5-9d9c-f368f00cdf08",
+      "name": "Send Invoice Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
       "position": [
-        -16,
-        -128
+        2448,
+        -272
       ],
-      "id": "efc9e406-afee-413f-8f21-557a2ca48f5f",
-      "name": "Upload POS Invoice to Slack",
-      "webhookId": "4a0070a4-c577-4859-9b9b-9bd56daebafc",
+      "webhookId": "78726583-9fcb-4931-a22e-d0af6e6cf57a",
       "credentials": {
-        "slackOAuth2Api": {
-          "id": "ed7L1vGhKn2oIuCx",
-          "name": "Studio3000 Slack Bot oAuth2"
+        "gmailOAuth2": {
+          "id": "kT4eWzA7XyysfGcr",
+          "name": "Gmail shop@tuftinglove.com"
         }
       }
     },
@@ -265,150 +694,49 @@
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": true,
+            "version": 2,
             "leftValue": "",
+            "caseSensitive": true,
             "typeValidation": "strict",
-            "version": 3
+            "combinator": "and"
           },
           "conditions": [
             {
-              "id": "11ee07da-8bed-4ebf-83fa-a3d31a478713",
-              "leftValue": "",
+              "id": "slack-check",
+              "leftValue": "={{ $json._shouldSendSlack }}",
               "rightValue": "",
               "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
               }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -240,
-        -112
-      ],
-      "id": "c83c19af-486b-48e0-8d4c-1f1c41d1086d",
-      "name": "If POS Order"
-    },
-    {
-      "parameters": {
-        "formFields": {
-          "values": [
-            {
-              "fieldLabel": "Firma / Name",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Adresse 1"
-            },
-            {
-              "fieldLabel": "Adresse 2"
-            },
-            {
-              "fieldLabel": "PLZ",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Ort",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Land",
-              "fieldType": "dropdown",
-              "defaultValue": "Schweiz",
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Deutschland"
-                  },
-                  {
-                    "option": "Österreich"
-                  },
-                  {
-                    "option": "Frankreich"
-                  },
-                  {
-                    "option": "Italien"
-                  }
-                ]
-              },
-              "requiredField": true
             }
           ]
         },
-        "options": {
-          "formTitle": "Rechnungsinformationen eingeben",
-          "formDescription": "Füge hier die Rechnungsadresse für die Order {orderName} hinzu. Achtung: Diese wird nicht in Shopify gespeichert, sondern dient nur der einmaligen Rechnungsstellung. Für weitere Bestellungen muss die Adresse in Shopify hinzugefügt werden.",
-          "buttonLabel": "Rechnung erstellen"
-        }
-      },
-      "type": "n8n-nodes-base.form",
-      "typeVersion": 2.3,
-      "position": [
-        -1632,
-        -384
-      ],
-      "id": "dbd94bd7-8690-4d80-ab6d-a1dc14001bdb",
-      "name": "Request billing address",
-      "webhookId": "1726a611-40e3-4637-b194-44dc1f72c40a"
-    },
-    {
-      "parameters": {
-        "operation": "completion",
-        "completionTitle": "Das hat geklappt!",
-        "completionMessage": "Die Rechnung wird jetzt generiert und steht in Kürze in Slack und Shopify zum Download bereit.",
-        "options": {
-          "formTitle": "Die Rechnung wird erstellt"
-        }
-      },
-      "type": "n8n-nodes-base.form",
-      "typeVersion": 2.3,
-      "position": [
-        -1200,
-        -384
-      ],
-      "id": "da580af5-72a9-4788-b2e0-904147fa964a",
-      "name": "Address saved",
-      "webhookId": "e4c78138-f1b4-4395-9f29-4f48b7885aad"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "5abfafd0-6bf8-4674-91f7-63d06ef134a9",
-              "leftValue": "",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
         "options": {}
       },
+      "id": "f6c4fb6f-2def-477b-b203-7dccda2b257e",
+      "name": "Should Send Slack?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
+      "typeVersion": 2.2,
       "position": [
-        -1936,
-        -240
-      ],
-      "id": "49d4b94b-543e-4550-b7e5-eecade1379da",
-      "name": "is POS Order without Billing Address"
+        2368,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = $input.item.json;\nconst order = data._order || data;\nconst gdrive = data._gdrive;\nconst orderNumber = String(order.order_number || order.name).replace('#', '');\nconst totalPrice = parseFloat(order.total_price || 0).toFixed(2);\nconst currency = order.currency || 'CHF';\nconst customerName = order.customer?.first_name && order.customer?.last_name\n  ? `${order.customer.first_name} ${order.customer.last_name}`\n  : order.billing_address?.name || 'Unbekannt';\nconst hasEmail = !!(order.customer?.email || order.email);\nconst customerEmail = order.customer?.email || order.email || 'Keine E-Mail';\nconst orderDate = new Date(order.created_at);\nconst dueDate = new Date(orderDate);\ndueDate.setDate(dueDate.getDate() + 30);\nconst dueDateFormatted = dueDate.toLocaleDateString('de-CH');\nconst blocks = [\n  {\"type\": \"header\", \"text\": {\"type\": \"plain_text\", \"text\": \"POS Rechnung erstellt\", \"emoji\": true}},\n  {\"type\": \"section\", \"fields\": [\n    {\"type\": \"mrkdwn\", \"text\": `*Bestellung:*\\n#${orderNumber}`},\n    {\"type\": \"mrkdwn\", \"text\": `*Betrag:*\\n${currency} ${totalPrice}`},\n    {\"type\": \"mrkdwn\", \"text\": `*Kunde:*\\n${customerName}`},\n    {\"type\": \"mrkdwn\", \"text\": `*Faellig bis:*\\n${dueDateFormatted}`}\n  ]},\n  {\"type\": \"section\", \"text\": {\"type\": \"mrkdwn\", \"text\": `*E-Mail:* ${hasEmail ? customerEmail : 'Keine E-Mail hinterlegt'}`}},\n  {\"type\": \"actions\", \"elements\": [\n    {\"type\": \"button\", \"text\": {\"type\": \"plain_text\", \"text\": \"Rechnung ansehen\", \"emoji\": true}, \"url\": gdrive?.share_url || '', \"action_id\": \"view_invoice\"}\n  ]}\n];\nreturn {\n  json: {...data, _slack: {channel: '#tuftinglove-invoices', blocksJson: JSON.stringify(blocks)}},\n  binary: $input.item.binary\n};"
+      },
+      "id": "c526a3d2-0af5-4b54-8a4d-a73d34291d57",
+      "name": "Prepare Slack Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        112
+      ]
     },
     {
       "parameters": {
@@ -420,130 +748,72 @@
           "mode": "list",
           "cachedResultName": "pos-rechnungen"
         },
-        "text": "Die Order {orderName} hat keine Rechnungsadresse. Bitte klicke hier, um sie hinzuzufügen: {linkToForm)}",
-        "otherOptions": {
-          "includeLinkToWorkflow": false
-        }
-      },
-      "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.4,
-      "position": [
-        -1424,
-        -384
-      ],
-      "id": "616a7517-c6a5-47cf-8d12-11f116a0acac",
-      "name": "Send a message",
-      "webhookId": "753154f0-3cf6-49c3-81dd-7ae0bded8d1c",
-      "credentials": {
-        "slackOAuth2Api": {
-          "id": "ed7L1vGhKn2oIuCx",
-          "name": "Studio3000 Slack Bot oAuth2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "authentication": "accessToken",
-        "operation": "get",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.shopify",
-      "typeVersion": 1,
-      "position": [
-        -1712,
-        784
-      ],
-      "id": "db054455-0031-4230-bb8b-b59c0d2a4c38",
-      "name": "Get an order",
-      "credentials": {
-        "shopifyAccessTokenApi": {
-          "id": "6RzAdUyNsVFzcUMs",
-          "name": "Shopify Tuftinglove.com"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "7eb338e7-63b9-42cb-a4c9-c6f904ef04b4",
-              "leftValue": "",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -1488,
-        784
-      ],
-      "id": "f3eed7a8-7ed8-4697-a3eb-2f074807417c",
-      "name": "Payment pending?"
-    },
-    {
-      "parameters": {
-        "authentication": "oAuth2",
-        "select": "channel",
-        "channelId": {
-          "__rl": true,
-          "value": "C0A56HZ7WKW",
-          "mode": "list",
-          "cachedResultName": "rechnungen-verkauf-allgemein"
-        },
-        "text": "Achtung: Die Rechnung für die Order {orderName} kann nicht mehr geändert werden, da sie bereits teilweise bezahlt ist. ",
+        "messageType": "block",
+        "blocksUi": "={{ $json._slack.blocksJson }}",
         "otherOptions": {}
       },
+      "id": "d386c76b-a953-4340-9e99-58cf6c0ae062",
+      "name": "Send POS Invoice Notification",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.4,
       "position": [
-        -1248,
-        944
+        2784,
+        112
       ],
-      "id": "f2099643-1197-446e-bb59-0757b33be684",
-      "name": "Send message: Invoice can't be changed",
-      "webhookId": "0a950658-939f-4a17-b130-f1f81179e239",
+      "webhookId": "4eb417e5-87da-4bef-8cff-ce01bba2c393",
       "credentials": {
         "slackOAuth2Api": {
           "id": "ed7L1vGhKn2oIuCx",
           "name": "Studio3000 Slack Bot oAuth2"
         }
       }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.tuftinglove.com/apps/download-pdf/orders/20013e86ca78142b8cfa/20197539836450216/{{ (($json.order?.name || $json.name || '').replace('#', '')).toLowerCase() }}.pdf",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "originalInvoice"
+            }
+          }
+        }
+      },
+      "id": "5f498ef1-d12b-4103-a3fb-4f877a348519",
+      "name": "Download Original Invoice1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -656,
+        320
+      ]
     },
     {
       "parameters": {
         "dataTableId": {
           "__rl": true,
           "value": "j0FGBDQgzLbj4ftc",
-          "mode": "list",
-          "cachedResultName": "[TL] Invoice Mapping",
-          "cachedResultUrl": "/projects/wiccQiXgVR9SJMbF/datatables/j0FGBDQgzLbj4ftc"
+          "mode": "id"
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "isPosOrder": false
+            "shopifyOrderID": "={{ $json._orderId || $json._order?.id || $json.order?.id }}",
+            "shopifyOrderName": "={{ $json._orderName || $json._order?.name || $json.order?.name }}",
+            "shopifyCustomerId": "={{ $json._order?.customer?.id || $json.order?.customer?.id || '' }}",
+            "isPosOrder": "={{ ($json._order?.source_name || $json.order?.source_name) === 'pos' }}",
+            "paymentGateway": "={{ ($json._order?.payment_gateway_names || $json.order?.payment_gateway_names || []).join(', ') }}",
+            "gdriveShareLink": "={{ $json._gdrive?.share_url || '' }}",
+            "gdrivePath": "={{ $json._gdrive?.file_id || '' }}",
+            "invoiceCreatedAt": "={{ $now.toISO() }}",
+            "invoiceUpdatedAt": "={{ $now.toISO() }}"
           },
           "matchingColumns": [],
           "schema": [
             {
-              "id": "shopifyCustomerId",
-              "displayName": "shopifyCustomerId",
+              "id": "shopifyOrderID",
+              "displayName": "shopifyOrderID",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -562,8 +832,8 @@
               "removed": false
             },
             {
-              "id": "shopifyOrderID",
-              "displayName": "shopifyOrderID",
+              "id": "shopifyCustomerId",
+              "displayName": "shopifyCustomerId",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -612,26 +882,6 @@
               "removed": false
             },
             {
-              "id": "invoiceId",
-              "displayName": "invoiceId",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "invoiceHash",
-              "displayName": "invoiceHash",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
               "id": "invoiceCreatedAt",
               "displayName": "invoiceCreatedAt",
               "required": false,
@@ -650,26 +900,6 @@
               "type": "dateTime",
               "readOnly": false,
               "removed": false
-            },
-            {
-              "id": "invoiceCanceledAt",
-              "displayName": "invoiceCanceledAt",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "originalInvoiceId",
-              "displayName": "originalInvoiceId",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -677,14 +907,14 @@
         },
         "options": {}
       },
+      "id": "c9762818-6bb5-4922-b9bf-5b97789785a2",
+      "name": "Log Invoice Processing",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        336,
-        -224
-      ],
-      "id": "4e7bc527-2ccc-457d-aaed-a62cc178bd18",
-      "name": "Create Log Entry"
+        2256,
+        112
+      ]
     },
     {
       "parameters": {
@@ -692,112 +922,23 @@
         "dataTableId": {
           "__rl": true,
           "value": "j0FGBDQgzLbj4ftc",
-          "mode": "list",
-          "cachedResultName": "[TL] Invoice Mapping",
-          "cachedResultUrl": "/projects/wiccQiXgVR9SJMbF/datatables/j0FGBDQgzLbj4ftc"
+          "mode": "id"
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "isPosOrder": false
+            "shopifyOrderID": "={{ $json._orderId || $json._order?.id || $json.order?.id }}",
+            "invoiceUpdatedAt": "={{ $now.toISO() }}"
           },
-          "matchingColumns": [],
+          "matchingColumns": [
+            "shopifyOrderID"
+          ],
           "schema": [
-            {
-              "id": "shopifyCustomerId",
-              "displayName": "shopifyCustomerId",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "shopifyOrderName",
-              "displayName": "shopifyOrderName",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
             {
               "id": "shopifyOrderID",
               "displayName": "shopifyOrderID",
               "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "isPosOrder",
-              "displayName": "isPosOrder",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "boolean",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "paymentGateway",
-              "displayName": "paymentGateway",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "gdriveShareLink",
-              "displayName": "gdriveShareLink",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "gdrivePath",
-              "displayName": "gdrivePath",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "invoiceId",
-              "displayName": "invoiceId",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "invoiceHash",
-              "displayName": "invoiceHash",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "invoiceCreatedAt",
-              "displayName": "invoiceCreatedAt",
-              "required": false,
-              "defaultMatch": false,
+              "defaultMatch": true,
               "display": true,
               "type": "string",
               "readOnly": false,
@@ -812,24 +953,57 @@
               "type": "dateTime",
               "readOnly": false,
               "removed": false
-            },
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "5078668f-c8cd-4732-8663-97c1b79306db",
+      "name": "Update Log After Email",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2720,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "j0FGBDQgzLbj4ftc",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "shopifyOrderID": "={{ $json._orderId || $json._order?.id || $json.order?.id }}",
+            "invoiceUpdatedAt": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [
+            "shopifyOrderID"
+          ],
+          "schema": [
             {
-              "id": "invoiceCanceledAt",
-              "displayName": "invoiceCanceledAt",
+              "id": "shopifyOrderID",
+              "displayName": "shopifyOrderID",
               "required": false,
-              "defaultMatch": false,
+              "defaultMatch": true,
               "display": true,
-              "type": "dateTime",
+              "type": "string",
               "readOnly": false,
               "removed": false
             },
             {
-              "id": "originalInvoiceId",
-              "displayName": "originalInvoiceId",
+              "id": "invoiceUpdatedAt",
+              "displayName": "invoiceUpdatedAt",
               "required": false,
               "defaultMatch": false,
               "display": true,
-              "type": "string",
+              "type": "dateTime",
               "readOnly": false,
               "removed": false
             }
@@ -839,64 +1013,19 @@
         },
         "options": {}
       },
+      "id": "ef85d1f5-6a98-479f-9a38-6e108719d85d",
+      "name": "Update Log After Slack",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        -256,
-        800
-      ],
-      "id": "8854fcc1-c5c5-4a21-a06a-e3b28c5a8f99",
-      "name": "Update Log Entry"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "009c349c-b530-48b9-9b15-30cf7dc267c2",
-              "leftValue": "",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -240,
-        -304
-      ],
-      "id": "79a006c4-d860-4a4f-ae60-144074859018",
-      "name": "if Mail Address exists"
+        2992,
+        112
+      ]
     }
   ],
   "pinData": {},
   "connections": {
     "Order created": {
-      "main": [
-        [
-          {
-            "node": "Download Original Invoice",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Download Original Invoice": {
       "main": [
         [
           {
@@ -907,43 +1036,29 @@
         ]
       ]
     },
-    "Order updated": {
+    "is POS Order without Billing Address": {
       "main": [
         [
           {
-            "node": "If row exists",
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Determine Invoice Type",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Send invoice update to customer - DE1": {
-      "main": [
-        []
-      ]
-    },
-    "Upload file": {
+    "Send a message": {
       "main": [
         [
           {
-            "node": "If POS Order",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Upload POS Invoice to Slack": {
-      "main": [
-        []
-      ]
-    },
-    "If POS Order": {
-      "main": [
-        [
-          {
-            "node": "Upload POS Invoice to Slack",
+            "node": "Request billing address",
             "type": "main",
             "index": 0
           }
@@ -954,29 +1069,6 @@
       "main": [
         [
           {
-            "node": "Send a message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "is POS Order without Billing Address": {
-      "main": [
-        [
-          {
-            "node": "Request billing address",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        []
-      ]
-    },
-    "Send a message": {
-      "main": [
-        [
-          {
             "node": "Address saved",
             "type": "main",
             "index": 0
@@ -984,60 +1076,278 @@
         ]
       ]
     },
-    "If row exists": {
+    "Address saved": {
       "main": [
         [
           {
-            "node": "Get an order",
+            "node": "Determine Invoice Type",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get an order": {
+    "Determine Invoice Type": {
       "main": [
         [
           {
-            "node": "Payment pending?",
+            "node": "Is Invoice Order?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Payment pending?": {
+    "Calculate QRR Reference": {
       "main": [
-        [],
         [
           {
-            "node": "Send message: Invoice can't be changed",
+            "node": "Map Debtor Address",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Send message: Invoice can't be changed": {
-      "main": [
-        []
-      ]
-    },
-    "Create Log Entry": {
-      "main": [
-        []
-      ]
-    },
-    "Send invoice to customer - DE": {
-      "main": [
-        []
-      ]
-    },
-    "if Mail Address exists": {
+    "Map Debtor Address": {
       "main": [
         [
           {
-            "node": "Send invoice to customer - DE",
+            "node": "Build QR Invoice Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build QR Invoice Payload": {
+      "main": [
+        [
+          {
+            "node": "Generate QR Payment Part",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Invoice Order?": {
+      "main": [
+        [
+          {
+            "node": "Download Original Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Original Invoice1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Original Invoice": {
+      "main": [
+        [
+          {
+            "node": "Calculate QRR Reference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate QR Payment Part": {
+      "main": [
+        [
+          {
+            "node": "Prepare PDF Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare PDF Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge PDFs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Due Date": {
+      "main": [
+        [
+          {
+            "node": "Update Order Metafields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge PDFs": {
+      "main": [
+        [
+          {
+            "node": "Generate Random Filename",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Random Filename": {
+      "main": [
+        [
+          {
+            "node": "Upload Invoice to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Invoice to Drive": {
+      "main": [
+        [
+          {
+            "node": "Share Invoice File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share Invoice File": {
+      "main": [
+        [
+          {
+            "node": "Build Share Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Share Link": {
+      "main": [
+        [
+          {
+            "node": "Calculate Due Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email Data": {
+      "main": [
+        [
+          {
+            "node": "Should Send Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Send Email?": {
+      "main": [
+        [
+          {
+            "node": "Send Invoice Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Should Send Slack?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Send Slack?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Slack Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Slack Message": {
+      "main": [
+        [
+          {
+            "node": "Send POS Invoice Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Original Invoice1": {
+      "main": [
+        [
+          {
+            "node": "Generate Random Filename",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Order Metafields": {
+      "main": [
+        [
+          {
+            "node": "Log Invoice Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Invoice Processing": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Invoice Email": {
+      "main": [
+        [
+          {
+            "node": "Update Log After Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send POS Invoice Notification": {
+      "main": [
+        [
+          {
+            "node": "Update Log After Slack",
             "type": "main",
             "index": 0
           }
@@ -1050,11 +1360,10 @@
     "executionOrder": "v1",
     "timeSavedMode": "fixed",
     "callerPolicy": "workflowsFromSameOwner",
-    "executionTimeout": -1,
     "availableInMCP": true,
     "timeSavedPerExecution": 5
   },
-  "versionId": "dc6a1c60-12c8-4af9-898f-5dcc379bd366",
+  "versionId": "f59aaa3f-c4da-421c-9f1f-5cb9dbae6327",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e853cd69cca0e84ba42853bd665b7fd787b5193173ba2d8a6fc3b3e090b98d5e"
